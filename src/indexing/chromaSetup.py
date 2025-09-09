@@ -9,12 +9,12 @@ def createVectorStore():
     embeddings = BedrockEmbeddings(region_name='us-east-1', model_id='amazon.titan-embed-text-v1')
     
     documents = []
-    result = s3Client.list_objects_v2(Bucket='juridicosprojeto4', Prefix='juridicos/')
+    result = s3Client.list_objects_v2(Bucket='chatbot-lucas-dataset-202509', Prefix='dataset/juridicos/')
     
     for obj in result['Contents']:
         if obj['Key'].endswith('.pdf'):
             presignedUrl = s3Client.generate_presigned_url('get_object', 
-                Params={'Bucket': 'juridicosprojeto4', 'Key': obj['Key']})
+                Params={'Bucket': 'chatbot-lucas-dataset-202509', 'Key': obj['Key']})
             loader = PyPDFLoader(presignedUrl)
             documents.extend(loader.load())
     
