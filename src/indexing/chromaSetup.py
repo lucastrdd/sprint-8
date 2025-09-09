@@ -5,20 +5,27 @@ from langchain_community.vectorstores import Chroma
 from utils.awsConfig import getS3Client
 
 def createVectorStore():
-    s3Client = getS3Client()
-    embeddings = BedrockEmbeddings(region_name='us-east-1', model_id='amazon.titan-embed-text-v1')
+    print("📁 Modo local - Usando arquivos de exemplo")
     
+    # 1. Tenta carregar de arquivos locais se existirem
     documents = []
-    result = s3Client.list_objects_v2(Bucket='chatbot-lucas-dataset-202509', Prefix='dataset/juridicos/')
+    if os.path.exists('/app/data/'):
+        for file in os.listdir('/app/data/'):
+            if file.endswith('.pdf'):
+                loader = PyPDFLoader(f'/app/data/{file}')
+                documents.extend(loader.load())
     
-    for obj in result['Contents']:
-        if obj['Key'].endswith('.pdf'):
-            presignedUrl = s3Client.generate_presigned_url('get_object', 
-                Params={'Bucket': 'chatbot-lucas-dataset-202509', 'Key': obj['Key']})
-            loader = PyPDFLoader(presignedUrl)
-            documents.extend(loader.load())
+    # 2. Se não achou arquivos, usa dados de exemplo
+    if not documents:
+        from langchain.docstore.document import Document
+        documents = [
+            Document(page_content="Lei de Introdução às Normas do Direito Brasileiro."),
+            Document(page_content="Código Civil. Art. 1º: Toda pessoa é capaz de direitos e deveres."),
+        ]
+        print("⚠️  Usando dados de exemplo")
     
     textSplitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     chunks = textSplitter.split_documents(documents)
     
+    embeddings = BedrockEmbeddings(region_name='us-east-1', model_id='amazon.titan-embed-text-v1')
     return Chroma.from_documents(chunks, embeddings, persist_directory='/app/chromaDb')
