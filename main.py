@@ -1,7 +1,10 @@
 import os
-from src.indexing.chromaSetup import createVectorStore
-from src.rag.queryHandler import getResponse
-from src.bot.telegramBot import setupBot
+import sys
+sys.path.insert(0, 'src')
+
+from rag.queryHandler import getResponse
+from indexing.chromaSetup import createVectorStore
+from bot.telegramBot import setupBot
 
 def main():
     print('🔄 Carregando documentos...')
