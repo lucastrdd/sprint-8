@@ -1,4 +1,4 @@
-from src.llm.bedrockClient import getLlm
+from llm.bedrockClient import getLlm
 from langchain.chains import RetrievalQA
 
 def getResponse(retriever, question):

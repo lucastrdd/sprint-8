@@ -2,7 +2,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_aws import BedrockEmbeddings
 from langchain_community.vectorstores import Chroma
-from src.utils.awsConfig import getS3Client
+from utils.awsConfig import getS3Client
 
 def createVectorStore():
     s3Client = getS3Client()
