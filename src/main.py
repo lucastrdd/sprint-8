@@ -1,5 +1,5 @@
 import os
-from src.indexing.vectorStore import createVectorStore
+from src.indexing.chromaSetup import createVectorStore
 from src.rag.queryHandler import getResponse
 from src.bot.telegramBot import setupBot
 
