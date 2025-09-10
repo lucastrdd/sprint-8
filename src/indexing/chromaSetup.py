@@ -8,8 +8,8 @@ from src.utils.awsConfig import getS3Client
 def createVectorStore():
     s3Client = getS3Client()
     embeddings = BedrockEmbeddings(
-        region_name='us-east-2',
-        model_id='amazon.titan-embed-text-v1:0'
+        region_name="us-east-1",
+        model_id="amazon.titan-embed-text-v1"
     )
     
     documents = []
