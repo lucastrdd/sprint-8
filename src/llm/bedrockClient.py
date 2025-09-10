@@ -1,8 +1,10 @@
-from langchain_aws import BedrockLLM
+from langchain_community.llms import FakeListLLM
 
 def getLlm():
-    return BedrockLLM(
-        model_id='amazon.nova-premier-v1:0',
-        region_name='us-east-2',
-        model_kwargs={'temperature': 0.3, 'maxTokenCount': 2048}
-    )
+    print("🤖 Usando LLM fake para testes")
+    responses = [
+        "Baseado na documentação jurídica, isso é válido.",
+        "Conforme a legislação brasileira, isso está correto.",
+        "Os documentos indicam que isso é permitido por lei."
+    ]
+    return FakeListLLM(responses=responses)
