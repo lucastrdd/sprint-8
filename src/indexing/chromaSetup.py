@@ -3,30 +3,43 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_aws import BedrockEmbeddings
 from langchain_community.vectorstores import Chroma
-from utils.awsConfig import getS3Client
+from src.utils.awsConfig import getS3Client
 
 def createVectorStore():
-    print("📁 Modo local - Usando arquivos de exemplo")
+    s3Client = getS3Client()
+    embeddings = BedrockEmbeddings(
+        region_name='us-east-2',
+        model_id='amazon.titan-embed-text-v2:0'
+    )
     
-    # 1. Tenta carregar de arquivos locais se existirem
     documents = []
-    if os.path.exists('/app/data/'):
-        for file in os.listdir('/app/data/'):
-            if file.endswith('.pdf'):
-                loader = PyPDFLoader(f'/app/data/{file}')
-                documents.extend(loader.load())
+    result = s3Client.list_objects_v2(
+        Bucket='chatbot-lucas-dataset-202509',  
+        Prefix='dataset/juridicos/'
+    )
     
-    # 2. Se não achou arquivos, usa dados de exemplo
-    if not documents:
-        from langchain.docstore.document import Document
-        documents = [
-            Document(page_content="Lei de Introdução às Normas do Direito Brasileiro."),
-            Document(page_content="Código Civil. Art. 1º: Toda pessoa é capaz de direitos e deveres."),
-        ]
-        print("⚠️  Usando dados de exemplo")
+    for obj in result['Contents']:
+        if obj['Key'].endswith('.pdf'):
+            print(f"📄 Processando: {obj['Key']}")
+            presignedUrl = s3Client.generate_presigned_url(
+                'get_object',
+                Params={
+                    'Bucket': 'chatbot-lucas-dataset-202509',
+                    'Key': obj['Key']
+                },
+                ExpiresIn=300
+            )
+            loader = PyPDFLoader(presignedUrl)
+            documents.extend(loader.load())
     
-    textSplitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    textSplitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=100
+    )
     chunks = textSplitter.split_documents(documents)
     
-    embeddings = BedrockEmbeddings(region_name='us-east-1', model_id='amazon.titan-embed-text-v1')
-    return Chroma.from_documents(chunks, embeddings, persist_directory='/app/chromaDb')
+    return Chroma.from_documents(
+        chunks, 
+        embeddings, 
+        persist_directory='/app/chromaDb'
+    )
