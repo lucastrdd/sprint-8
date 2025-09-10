@@ -2,15 +2,14 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_aws import BedrockEmbeddings
+from langchain_community.embeddings import FakeEmbeddings
 from langchain_community.vectorstores import Chroma
 from src.utils.awsConfig import getS3Client
 
 def createVectorStore():
     s3Client = getS3Client()
-    embeddings = BedrockEmbeddings(
-        region_name="us-east-1",
-        model_id='amazon.titan-embed-text-v1'
-    )
+
+    embeddings = FakeEmbeddings(size=1536)  
     
     documents = []
     result = s3Client.list_objects_v2(
