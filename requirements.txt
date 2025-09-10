@@ -3,3 +3,4 @@ langchain-community
 chromadb
 boto3
 python-telegram-bot
+pypdf
